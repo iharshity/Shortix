@@ -1,0 +1,27 @@
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const app = express();
+const authRouter = require('./routes/auth.route');
+const urlRouter = require('./routes/url.routes');
+const redirectRouter = require('./routes/redirect.route');
+
+const FRONTEND_ORIGIN = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+app.use(express.json());
+app.use(cookieParser());
+
+// The frontend runs on a different origin (Vite default port 5173), so the API
+// must allow cross-origin requests and send credentials (auth uses an httpOnly cookie).
+app.use(
+    cors({
+        origin: FRONTEND_ORIGIN,
+        credentials: true,
+    })
+);
+
+app.use('/api/auth', authRouter);
+app.use('/api/url', urlRouter);
+app.use('/', redirectRouter);
+
+module.exports = app;

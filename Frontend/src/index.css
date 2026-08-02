@@ -1,0 +1,80 @@
+/* =========================
+   URL Shortener — theme
+   Dark textured background,
+   iOS 18 glass panels,
+   cyan accent.
+   ========================= */
+
+:root {
+  --bg: #0b0d11;
+  --text: #5a6a7a;
+  --text-h: #e8edf2;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --code-bg: #0c1520;
+  --accent: #00d4ff;
+  --accent-bg: rgba(0, 212, 255, 0.08);
+  --accent-border: rgba(0, 212, 255, 0.35);
+  --glass-bg: rgba(28, 33, 44, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(10, 18, 30, 0.65);
+  --error: #f87171;
+  --success: #4ade80;
+  --shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 0.5px rgba(255, 255, 255, 0.04);
+
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --heading: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  font: 16px/1.6 var(--sans);
+  color-scheme: dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  background-color: var(--bg);
+  /* soft top-down spotlight — matches the reference texture */
+  background-image:
+    radial-gradient(ellipse 70% 55% at 55% 8%, rgba(55, 65, 80, 0.35) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 40% at 60% 90%, rgba(10, 18, 30, 0.4) 0%, transparent 100%);
+  background-attachment: fixed;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.spinner-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-size: 15px;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+a:hover {
+  opacity: 0.8;
+}
