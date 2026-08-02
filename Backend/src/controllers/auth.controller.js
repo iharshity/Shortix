@@ -16,7 +16,10 @@ function getAuthCookieOptions() {
     return {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        // 'none' in production so the httpOnly cookie survives cross-site
+        // requests (Vercel frontend -> Render backend); 'lax' is fine in dev
+        // where the Vite proxy makes everything same-origin.
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: JWT_COOKIE_MAX_AGE_MS,
         path: '/',
     };

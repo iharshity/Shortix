@@ -1,4 +1,4 @@
-# URL Shortener
+# Shortix
 
 A full-stack URL shortener built with Express, MongoDB, Redis, and React.
 
@@ -19,12 +19,11 @@ A full-stack URL shortener built with Express, MongoDB, Redis, and React.
 - Redis-cached redirects (auto-fallback to MongoDB)
 - Rate limiting on auth & shorten endpoints
 - Session restore on page reload (`/api/auth/me`)
-- iOS 18 glass UI with cyan accent theme
 
 ## Project Structure
 
 ```
-URL_Shortener/
+Shortix/
 ├── Backend/
 │   ├── src/
 │   │   ├── config/        # DB, Redis, env
@@ -82,7 +81,3 @@ See [Backend/.env.example](Backend/.env.example) for all required variables.
 | `JWT_SECRET` | Secret key for JWT signing |
 | `PUBLIC_BASE_URL` | Backend public URL (e.g. `https://api.example.com`) |
 | `FRONTEND_URL` | Frontend URL for CORS (e.g. `https://yourapp.vercel.app`) |
-
-## License
-
-MIT
