@@ -6,9 +6,12 @@ export class ApiError extends Error {
   }
 }
 
-// VITE_API_URL is set in production (Vercel env vars).
-// In dev, the Vite proxy forwards /api → localhost:4000 so we use a relative path.
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
+// VITE_API_URL is the backend host in production (e.g. https://api.example.com).
+// All API routes live under /api, so append it. In dev, the Vite proxy forwards
+// /api → localhost:4000 so we use a relative path.
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
+  : '/api'
 
 async function request(path, { method = 'GET', body } = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
