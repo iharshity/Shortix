@@ -4,7 +4,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-shortix.eta.vercel.app-06b6d4?style=flat-square&logo=vercel)](https://shortix-eta.vercel.app)
 
-Shortix is a production-ready URL shortener with user accounts, Redis-cached redirects, rate limiting, and a clean iOS 18 glass UI.
+Shortix is a production-ready URL shortener with user accounts, Redis-cached redirects, rate limiting, and a dark glass UI with neon accents.
 
 **Live app:** <https://shortix-eta.vercel.app>
 

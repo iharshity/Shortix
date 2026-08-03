@@ -1,7 +1,8 @@
 /* =========================
    Shortix — app styles
-   iOS 18 glass panels,
-   cyan accent, no card glow.
+   Dark glass panels,
+   green & blue neon accents,
+   ambient glow.
    ========================= */
 
 /* ---- App shell & navbar ---- */
@@ -17,10 +18,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 28px;
-  background: rgba(28, 33, 44, 0.45);
+  background: rgba(15, 17, 22, 0.6);
   backdrop-filter: blur(24px) saturate(150%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 0.5px solid var(--glass-border);
 }
 
 .brand {
@@ -53,14 +54,14 @@
   background: var(--glass-bg);
   backdrop-filter: blur(40px) saturate(150%);
   -webkit-backdrop-filter: blur(40px) saturate(150%);
-  border: var(--glass-border);
-  border-width: 0.5px;
-  border-style: solid;
+  border: 1px solid var(--glass-border);
   border-radius: 24px;
-  box-shadow: var(--shadow);
+  box-shadow:
+    var(--shadow),
+    0 0 40px rgba(52, 211, 153, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* top-edge reflection highlight */
 .auth-card::before,
 .shorten-card::before {
   content: '';
@@ -69,8 +70,8 @@
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0) 30%
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 25%
   );
   pointer-events: none;
   z-index: 0;
@@ -107,7 +108,7 @@
   align-items: center;
   justify-content: center;
   background: var(--accent-bg);
-  border: 0.5px solid var(--accent-border);
+  border: 1px solid var(--accent-border);
   color: var(--accent);
   margin-bottom: 20px;
 }
@@ -147,7 +148,7 @@
 .shorten-form input {
   width: 100%;
   padding: 13px 16px;
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
   border-radius: 12px;
   font: inherit;
   font-size: 15px;
@@ -160,7 +161,7 @@
 
 .field input::placeholder,
 .shorten-form input::placeholder {
-  color: #445566;
+  color: var(--text-muted);
 }
 
 .field input:focus,
@@ -201,15 +202,20 @@
   font-size: 15px;
   border-radius: 12px;
   padding: 13px 20px;
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
-  background: var(--input-bg);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
   color: var(--text-h);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.2s,
+    border-color 0.2s,
+    opacity 0.2s;
 }
 
 .btn:hover {
   transform: translateY(-1px);
+  border-color: var(--glass-border-strong);
   box-shadow: var(--shadow);
 }
 
@@ -221,13 +227,21 @@
 
 .btn-primary {
   width: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--accent);
+  border-color: var(--accent);
   color: #0a0f1c;
+  box-shadow: 0 0 16px var(--accent-glow);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 12px 30px rgba(0, 212, 255, 0.12);
+  background: var(--accent-bright);
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 28px var(--accent-glow), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.btn-primary:disabled {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .btn-ghost {
@@ -240,6 +254,7 @@
 .btn-ghost:hover {
   box-shadow: none;
   opacity: 0.8;
+  transform: none;
 }
 
 /* ---- Shorten page ---- */
@@ -287,7 +302,7 @@
 
 .result-card {
   margin-top: 28px;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border);
   padding-top: 24px;
   display: flex;
   flex-direction: column;
