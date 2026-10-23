@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/auth'
+import LoadingScreen from './LoadingScreen'
 
 export default function AuthPage({ mode }) {
   const isLogin = mode === 'login'
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, loading, login } = useAuth()
+  const { user, loading, login, stopLoading } = useAuth()
 
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -18,7 +19,7 @@ export default function AuthPage({ mode }) {
   const notice = location.state?.notice
 
   if (loading) {
-    return <div className="spinner-screen">Loading…</div>
+    return <LoadingScreen onSkip={stopLoading} />
   }
 
   if (user) {

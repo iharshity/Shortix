@@ -1,11 +1,12 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/auth'
+import LoadingScreen from './LoadingScreen'
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, loading, stopLoading } = useAuth()
 
   if (loading) {
-    return <div className="spinner-screen">Loading…</div>
+    return <LoadingScreen onSkip={stopLoading} />
   }
 
   if (!user) {

@@ -20,6 +20,10 @@ app.use(
     })
 );
 
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
 app.use('/api/auth', authRouter);
 app.use('/api/url', urlRouter);
 app.use('/', redirectRouter);

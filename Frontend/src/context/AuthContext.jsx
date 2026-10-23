@@ -32,6 +32,8 @@ export function AuthProvider({ children }) {
 
   const login = useCallback((userData) => setUser(userData), [])
 
+  const stopLoading = useCallback(() => setLoading(false), [])
+
   const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout')
@@ -42,7 +44,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, stopLoading }}>
       {children}
     </AuthContext.Provider>
   )
