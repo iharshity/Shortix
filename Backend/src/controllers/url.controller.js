@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Url = require('../models/url.model');
 const Counter = require('../models/counter.model');
 const { encodeBase62 } = require('../utils/base62');
@@ -20,7 +21,23 @@ const RESERVED_SLUGS = new Set([
 function isValidHttpUrl(value) {
     try {
         const parsedUrl = new URL(value);
-        return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+        if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+            return false;
+        }
+
+        const host = parsedUrl.hostname.toLowerCase();
+        // Prevent SSRF / internal host redirection
+        if (
+            host === 'localhost' ||
+            host === '127.0.0.1' ||
+            host === '0.0.0.0' ||
+            host === '::1' ||
+            host.endsWith('.local')
+        ) {
+            return false;
+        }
+
+        return true;
     } catch {
         return false;
     }
@@ -180,6 +197,14 @@ async function getUserUrls(req, res) {
 async function deleteUrl(req, res) {
     try {
         const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid URL ID.',
+            });
+        }
+
         const url = await Url.findOneAndDelete({ _id: id, user: req.user.id });
 
         if (!url) {
@@ -207,6 +232,13 @@ async function deleteUrl(req, res) {
 async function updateUrl(req, res) {
     const { id } = req.params;
     const { originalUrl } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid URL ID.',
+        });
+    }
 
     if (typeof originalUrl !== 'string' || !isValidHttpUrl(originalUrl)) {
         return res.status(400).json({
