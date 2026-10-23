@@ -115,3 +115,35 @@ Back on Render, set:
 Then **Manual Deploy** once more.
 
 > **Note:** in production the backend sets `SameSite=None` on the auth cookie so login works across the Vercel → Render domains.
+
+## 📦 API Endpoints
+
+### Authentication
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/register` | Register a new user |
+| `POST` | `/api/auth/login`    | Log in and receive JWT cookie |
+| `POST` | `/api/auth/logout`   | Clear auth cookie |
+| `GET`  | `/api/auth/me`       | Restore session |
+
+### URL Operations
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST`   | `/api/url/shorten` | Shorten a URL (optional custom slug) |
+| `GET`    | `/api/url/my-urls` | List user's short URLs |
+| `PATCH`  | `/api/url/:id`     | Update destination URL |
+| `DELETE` | `/api/url/:id`     | Delete a short link |
+
+### System & Redirects
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Health check for uptime monitors |
+| `GET` | `/:shortCode` | Redirect to original URL (Redis cached) |
+
+## 🤝 Contributing
+
+Contributions are welcome! Fork the repository, create a feature branch, and open a pull request. Please ensure code follows existing style and run `npm test` (if tests exist) before submitting.
+
+## 📄 License
+
+This project is licensed under the MIT License – see the `LICENSE` file for details.
