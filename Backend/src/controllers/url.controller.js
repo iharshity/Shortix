@@ -1,7 +1,7 @@
 const Url = require('../models/url.model');
 const Counter = require('../models/counter.model');
 const { encodeBase62 } = require('../utils/base62');
-const { getCachedUrl, cacheUrl } = require('../services/urlCache.service')
+const { getCachedUrl, cacheUrl, deleteCachedUrl } = require('../services/urlCache.service');
 
 const SHORT_CODE_LENGTH = 6;
 
@@ -51,6 +51,7 @@ async function shortenUrl(req, res) {
                 originalUrl: savedUrl.originalUrl,
                 shortCode: savedUrl.shortCode,
                 shortUrl: `${publicBaseUrl}/${savedUrl.shortCode}`,
+                clicks: 0,
                 createdAt: savedUrl.createdAt,
             },
         });
@@ -63,36 +64,95 @@ async function shortenUrl(req, res) {
     }
 }
 
-async function redirectUrl(req, res){
-    try{
-        const {shortCode} = req.params;
+async function redirectUrl(req, res) {
+    try {
+        const { shortCode } = req.params;
 
         const cachedOriginalUrl = await getCachedUrl(shortCode);
-        if(cachedOriginalUrl){
+        if (cachedOriginalUrl) {
+            // Asynchronously increment click count in the background
+            Url.updateOne({ shortCode }, { $inc: { clicks: 1 } }).catch((err) =>
+                console.error('Failed to update clicks in background:', err)
+            );
             return res.redirect(302, cachedOriginalUrl);
         }
 
-        const url = await Url.findOne({shortCode});
+        const url = await Url.findOneAndUpdate(
+            { shortCode },
+            { $inc: { clicks: 1 } },
+            { new: true }
+        );
 
-        if(!url){
+        if (!url) {
             return res.status(404).json({
-                success : false,
-                message : "Short Url not found",
-            })
+                success: false,
+                message: 'Short Url not found',
+            });
         }
 
         await cacheUrl(shortCode, url.originalUrl);
 
         return res.redirect(302, url.originalUrl);
-        
-    }catch(err){
-        console.log('Failed to redirect short Url:', err);
+    } catch (err) {
+        console.error('Failed to redirect short Url:', err);
 
         return res.status(500).json({
-            success : false,
-            message : 'Internal server error.'
-        })
+            success: false,
+            message: 'Internal server error.',
+        });
     }
 }
 
-module.exports = { shortenUrl, redirectUrl };
+async function getUserUrls(req, res) {
+    try {
+        const publicBaseUrl = (process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 5000}`).replace(/\/$/, '');
+        const urls = await Url.find({ user: req.user.id }).sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            data: urls.map((u) => ({
+                id: u._id,
+                originalUrl: u.originalUrl,
+                shortCode: u.shortCode,
+                shortUrl: `${publicBaseUrl}/${u.shortCode}`,
+                clicks: u.clicks || 0,
+                createdAt: u.createdAt,
+            })),
+        });
+    } catch (error) {
+        console.error('Failed to fetch user URLs:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error.',
+        });
+    }
+}
+
+async function deleteUrl(req, res) {
+    try {
+        const { id } = req.params;
+        const url = await Url.findOneAndDelete({ _id: id, user: req.user.id });
+
+        if (!url) {
+            return res.status(404).json({
+                success: false,
+                message: 'URL not found or unauthorized.',
+            });
+        }
+
+        await deleteCachedUrl(url.shortCode);
+
+        return res.status(200).json({
+            success: true,
+            message: 'URL deleted successfully.',
+        });
+    } catch (error) {
+        console.error('Failed to delete URL:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error.',
+        });
+    }
+}
+
+module.exports = { shortenUrl, redirectUrl, getUserUrls, deleteUrl };

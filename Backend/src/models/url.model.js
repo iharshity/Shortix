@@ -19,6 +19,10 @@ const urlSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
+        clicks: {
+            type: Number,
+            default: 0,
+        },
     },
     {
         timestamps: true,
