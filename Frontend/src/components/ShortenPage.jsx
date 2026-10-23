@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/auth'
 import QRCodeModal from './QRCodeModal'
+import EditUrlModal from './EditUrlModal'
 
 function isValidHttpUrl(value) {
   try {
@@ -18,6 +19,7 @@ export default function ShortenPage() {
   const navigate = useNavigate()
 
   const [url, setUrl] = useState('')
+  const [customSlug, setCustomSlug] = useState('')
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -31,8 +33,9 @@ export default function ShortenPage() {
   const [search, setSearch] = useState('')
   const [deletingId, setDeletingId] = useState(null)
 
-  // QR Modal state
+  // Modals state
   const [qrModal, setQrModal] = useState({ open: false, url: '', shortCode: '' })
+  const [editItem, setEditItem] = useState(null)
 
   async function fetchUrls() {
     setLoadingUrls(true)
@@ -67,11 +70,22 @@ export default function ShortenPage() {
       return setError('Please enter a valid http:// or https:// URL.')
     }
 
+    if (customSlug && customSlug.trim().length > 0) {
+      const slug = customSlug.trim()
+      if (slug.length < 3 || slug.length > 30) {
+        return setError('Custom alias must be between 3 and 30 characters.')
+      }
+    }
+
     setSubmitting(true)
     try {
-      const data = await api.post('/url/shorten', { url: url.trim() })
+      const data = await api.post('/url/shorten', {
+        url: url.trim(),
+        customSlug: customSlug.trim() || undefined,
+      })
       setResult(data.data)
       setUrl('')
+      setCustomSlug('')
       // Prepend newly created link to list immediately
       setUrls((prev) => [data.data, ...prev])
     } catch (err) {
@@ -113,6 +127,18 @@ export default function ShortenPage() {
       alert(err.message || 'Failed to delete URL.')
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function handleSaveEdit(id, newOriginalUrl) {
+    const data = await api.patch(`/url/${id}`, { originalUrl: newOriginalUrl })
+    if (data?.data) {
+      setUrls((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, originalUrl: newOriginalUrl } : item))
+      )
+      if (result?.id === id) {
+        setResult((prev) => ({ ...prev, originalUrl: newOriginalUrl }))
+      }
     }
   }
 
@@ -173,19 +199,39 @@ export default function ShortenPage() {
         {/* Shorten Form Card */}
         <div className="shorten-card">
           <h1>Shorten a link</h1>
-          <p className="shorten-sub">Paste a long URL and get a short one in a click.</p>
+          <p className="shorten-sub">Paste a long URL and get a short, branded one in a click.</p>
 
           <form className="shorten-form" onSubmit={handleShorten}>
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/very/long/path?with=params"
-              aria-label="URL to shorten"
-            />
-            <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? 'Shortening…' : 'Shorten'}
-            </button>
+            <div className="shorten-form-grid">
+              <input
+                type="text"
+                className="url-main-input"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/very/long/path?with=params"
+                aria-label="URL to shorten"
+                required
+              />
+
+              <div className="custom-slug-box">
+                <span className="custom-slug-prefix">shortix/</span>
+                <input
+                  type="text"
+                  className="custom-slug-input"
+                  value={customSlug}
+                  onChange={(e) =>
+                    setCustomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+                  }
+                  placeholder="custom-slug (optional)"
+                  maxLength={30}
+                  aria-label="Custom slug"
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary shorten-submit-btn" disabled={submitting}>
+                {submitting ? 'Shortening…' : 'Shorten'}
+              </button>
+            </div>
           </form>
 
           {error && (
@@ -336,6 +382,15 @@ export default function ShortenPage() {
                     <button
                       type="button"
                       className="btn-action"
+                      onClick={() => setEditItem(item)}
+                      title="Edit destination URL"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn-action"
                       onClick={() => openQR(item.shortUrl, item.shortCode)}
                       title="Generate QR code"
                     >
@@ -365,6 +420,15 @@ export default function ShortenPage() {
           url={qrModal.url}
           shortCode={qrModal.shortCode}
           onClose={closeQR}
+        />
+      )}
+
+      {/* Edit URL Modal */}
+      {editItem && (
+        <EditUrlModal
+          item={editItem}
+          onClose={() => setEditItem(null)}
+          onSave={handleSaveEdit}
         />
       )}
     </div>

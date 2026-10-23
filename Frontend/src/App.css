@@ -831,3 +831,142 @@
     align-items: flex-start;
   }
 }
+
+/* ---- Custom Slug & Enhanced Form Grid ---- */
+
+.shorten-form-grid {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.url-main-input {
+  flex: 2;
+  min-width: 0;
+}
+
+.custom-slug-box {
+  display: flex;
+  align-items: center;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 12px;
+  flex: 1.2;
+  min-width: 190px;
+  transition: border-color 0.15s;
+}
+
+.custom-slug-box:focus-within {
+  border-color: var(--accent-border);
+}
+
+.custom-slug-prefix {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.custom-slug-input {
+  width: 100%;
+  border: none !important;
+  background: transparent !important;
+  padding: 12px 6px !important;
+  color: var(--accent-bright) !important;
+  font-size: 14px;
+  font-family: var(--mono);
+  outline: none !important;
+}
+
+.custom-slug-input::placeholder {
+  color: var(--text-muted);
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+.shorten-submit-btn {
+  padding: 13px 28px !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---- Edit URL Modal ---- */
+
+.edit-modal-card {
+  max-width: 440px;
+  text-align: left;
+}
+
+.modal-accent-code {
+  color: var(--accent);
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+.edit-short-preview {
+  margin: 16px 0 20px;
+  padding: 10px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.edit-short-label {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.edit-short-link {
+  color: var(--accent);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-input-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.edit-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-h);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.edit-input:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+@media (max-width: 720px) {
+  .shorten-form-grid {
+    flex-direction: column;
+  }
+
+  .custom-slug-box {
+    width: 100%;
+  }
+
+  .shorten-submit-btn {
+    width: 100%;
+  }
+}
