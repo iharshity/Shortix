@@ -1,30 +1,72 @@
 # Shortix 🔗
 
-> A modern full-stack URL shortener — create, share, and track short links in seconds.
+> A modern full-stack URL shortener — create, brand, track, and manage short links in seconds.
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-shortix.eta.vercel.app-06b6d4?style=flat-square&logo=vercel)](https://shortix-eta.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-shortix--eta.vercel.app-06b6d4?style=flat-square&logo=vercel)](https://shortix-eta.vercel.app)
 
-Shortix is a production-ready URL shortener with user accounts, Redis-cached redirects, rate limiting, and a dark glass UI with neon accents.
+Shortix is a production-ready URL shortener built with user authentication, custom branded slugs, instant QR code generation, real-time click tracking, Redis-cached redirects, and a responsive dark glassmorphism UI.
 
-**Live app:** <https://shortix-eta.vercel.app>
+**Live Demo:** <https://shortix-eta.vercel.app>
+
+---
 
 ## ✨ Features
 
-- User registration & login with JWT **httpOnly cookies**
-- URL shortening via atomic counter + base62 encoding (6-char codes)
-- **Redis-cached redirects** (1h TTL) with automatic fallback to MongoDB
-- Rate limiting on auth & shorten endpoints
-- Session restore on page reload (`/api/auth/me`)
+- **Custom Branded Aliases** — Choose your own short link ending (e.g., `shortix.onrender.com/portfolio`) or use auto-generated Base62 codes (6-char).
+- **QR Code Generator** — Generate and download high-resolution QR codes (PNG) for any link with one click.
+- **Real-time Click Tracking** — Every redirect increments the click counter; badges show live engagement on the dashboard.
+- **"My Links" Dashboard** — View, search, copy, edit, and delete all your short links in one place.
+- **Edit Destination URLs** — Update where a short link points without changing the short code or reprinting QR codes.
+- **Delete with Confirmation** — Glassmorphism confirmation modal with automatic Redis cache invalidation.
+- **Redis-cached Redirects** — Ultra-fast 302 redirects served from Redis (1 h TTL) with automatic fallback to MongoDB.
+- **Secure JWT Authentication** — User accounts with JWT stored in `httpOnly` cross-site cookies and bcrypt password hashing.
+- **Rate Limiting** — Auth and shorten endpoints protected with `express-rate-limit` backed by a hybrid Redis / MemoryStore.
+- **Security Headers** — `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, and `Referrer-Policy` set on every response.
+- **SSRF Protection** — URL validation blocks `localhost`, `127.0.0.1`, `::1`, and `.local` destinations.
+- **Reserved Slug Guard** — System paths (`api`, `health`, `admin`, …) cannot be used as custom aliases.
+- **Keep-Alive Health Check** — `/health` endpoint for uptime monitors to prevent free-tier servers from sleeping.
+- **Floating Toast Notifications** — Real-time feedback for copying, shortening, editing, and deleting links.
+- **Responsive Dark Glass UI** — Neon-accented glassmorphism design optimized for desktop, tablet, and mobile.
+
+---
 
 ## 🧱 Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| **Backend** | Express 5, MongoDB (Mongoose), Redis (node-redis), JWT auth |
-| **Frontend** | React 19, Vite, React Router v7 |
-| **Auth** | JWT in httpOnly cookies, bcrypt password hashing |
-| **Caching** | Redis-backed URL cache (1h TTL), graceful degradation |
-| **Rate Limiting** | express-rate-limit with hybrid Redis/MemoryStore |
+|---|---|
+| **Frontend** | React 19, Vite, React Router v7, `qrcode.react` |
+| **Backend** | Express 5, Node.js, MongoDB (Mongoose), Redis (`node-redis`) |
+| **Authentication** | JWT in secure `httpOnly` cookies, bcrypt password hashing |
+| **Caching & Rate Limiting** | Redis-backed URL cache (1 h TTL) + `express-rate-limit` with Redis store |
+| **Deployment** | Vercel (Frontend) & Render (Backend) |
+
+---
+
+## 🔌 API Endpoints
+
+### Authentication
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/register` | Create a new user account |
+| `POST` | `/api/auth/login` | Log in and receive `httpOnly` session cookie |
+| `POST` | `/api/auth/logout` | Clear auth cookie |
+| `GET` | `/api/auth/me` | Restore user session on page load |
+
+### URL Operations
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/url/shorten` | Shorten a URL (accepts `url` and optional `customSlug`) |
+| `GET` | `/api/url/my-urls` | Get all short links created by the logged-in user |
+| `PATCH` | `/api/url/:id` | Update the destination URL of an existing short link |
+| `DELETE` | `/api/url/:id` | Delete a short link and invalidate its Redis cache |
+
+### System & Redirects
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Health check endpoint for uptime monitors |
+| `GET` | `/:shortCode` | Redirect to the original destination URL (Redis cached) |
+
+---
 
 ## 📁 Project Structure
 
@@ -32,118 +74,115 @@ Shortix is a production-ready URL shortener with user accounts, Redis-cached red
 Shortix/
 ├── Backend/
 │   ├── src/
-│   │   ├── config/        # DB, Redis, env
-│   │   ├── controllers/   # Auth, URL logic
-│   │   ├── middleware/    # Auth, rate limiter
-│   │   ├── models/        # User, Url schemas
-│   │   ├── routes/        # API + redirect routes
-│   │   └── app.js         # Express app setup
-│   ├── server.js          # Entry point
+│   │   ├── config/        # MongoDB & Redis client setup
+│   │   ├── controllers/   # Auth and URL logic (slugs, clicks, caching)
+│   │   ├── middleware/     # Auth verification & rate limiter
+│   │   ├── models/        # User, Url, and Counter schemas
+│   │   ├── routes/        # Auth, URL, and Redirect routes
+│   │   ├── services/      # Redis cache service
+│   │   ├── utils/         # Base62 encoder
+│   │   └── app.js         # Express setup & security headers
+│   ├── server.js          # Server entry point
 │   └── .env.example
 ├── Frontend/
 │   ├── src/
-│   │   ├── components/    # AuthPage, ShortenPage, ProtectedRoute
-│   │   ├── context/       # AuthContext
-│   │   ├── api.js         # Fetch wrapper
+│   │   ├── components/    # ShortenPage, AuthPage, QRCodeModal, EditUrlModal,
+│   │   │                  # ConfirmDeleteModal, LoadingScreen, ProtectedRoute
+│   │   ├── context/       # AuthContext, ToastContext
+│   │   ├── api.js         # HTTP client wrapper
 │   │   ├── App.jsx / App.css
-│   │   └── index.css      # Theme variables
+│   │   └── index.css      # Design tokens & dark glass theme
+│   ├── index.html
 │   └── vite.config.js
 └── README.md
 ```
 
+---
+
 ## 🛠 Getting Started
 
 ### Prerequisites
-
 - Node.js 18+
-- MongoDB Atlas account (or local MongoDB)
-- Redis Cloud account (or local Redis)
+- MongoDB Atlas database (or local MongoDB)
+- Redis Cloud instance (or local Redis)
 
-### Backend
+### 1. Setup Backend
 
 ```bash
 cd Backend
-cp .env.example .env       # fill in your credentials
+cp .env.example .env       # fill in your MongoDB and Redis credentials
 npm install
-npm run dev                # http://localhost:4000
+npm run dev                # runs on http://localhost:4000
 ```
 
-### Frontend
+### 2. Setup Frontend
 
 ```bash
-cd Frontend
+cd ../Frontend
 npm install
-npm run dev                # http://localhost:5173
+npm run dev                # runs on http://localhost:5173
 ```
+
+---
 
 ## 🔐 Environment Variables
 
-See [Backend/.env.example](Backend/.env.example) for all required variables.
+See [Backend/.env.example](Backend/.env.example) for reference:
 
 | Variable | Description |
-|----------|-------------|
-| `DB_URL` | MongoDB Atlas connection string |
-| `REDIS_URL` | Redis Cloud connection string |
+|---|---|
+| `DB_URL` | MongoDB connection string |
+| `REDIS_URL` | Redis connection string |
 | `JWT_SECRET` | Secret key for JWT signing (use a long random string) |
-| `PUBLIC_BASE_URL` | Backend public URL (short links point here) |
-| `FRONTEND_URL` | Frontend URL for CORS |
-| `NODE_ENV` | `production` on deployed servers |
-| `PORT` | Backend port (Render injects this) |
+| `PUBLIC_BASE_URL` | Public backend URL (used to prefix short links) |
+| `FRONTEND_URL` | Frontend URL for CORS allowance |
+| `NODE_ENV` | Set to `production` in production deployments |
+| `PORT` | Backend port (default `4000`, Render injects its own) |
+
+---
 
 ## ☁️ Deployment
 
 ### Backend — Render
+1. Create a new **Web Service** on Render connected to this repository.
+2. Settings:
+   - **Root Directory:** `Backend`
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+3. Add environment variables: `NODE_ENV=production`, `DB_URL`, `REDIS_URL`, `JWT_SECRET`, `PUBLIC_BASE_URL`, `FRONTEND_URL`.
+4. Deploy and copy your backend URL (e.g., `https://shortix-api.onrender.com`).
 
-1. Render → **New → Web Service** → connect the GitHub repo.
-2. **Root Directory:** `Backend` · **Build:** `npm install` · **Start:** `npm start`.
-3. Add env vars: `NODE_ENV=production`, `DB_URL`, `REDIS_URL`, `JWT_SECRET`, `PUBLIC_BASE_URL`, `FRONTEND_URL`.
-4. **Deploy**, then copy your URL (e.g. `https://shortix-api.onrender.com`).
+> **Keep-Alive Tip:** Free Render instances sleep after 15 min of inactivity. Set up a free cron job on [cron-job.org](https://cron-job.org) or UptimeRobot to ping `https://your-api.onrender.com/health` every 12 minutes.
 
 ### Frontend — Vercel
+1. Import this repository on Vercel.
+2. Settings:
+   - **Root Directory:** `Frontend`
+   - **Framework Preset:** `Vite`
+3. Add environment variable:
+   - `VITE_API_URL` = `https://your-api.onrender.com`
+4. Deploy and copy your live frontend URL.
+5. In Render, ensure `FRONTEND_URL` matches your Vercel URL so cross-origin cookies work properly.
 
-1. Vercel → **Add New → Project** → import the same repo.
-2. **Root Directory:** `Frontend` · Framework: **Vite**.
-3. Add env var `VITE_API_URL = <your Render URL>` (must be set before the build).
-4. **Deploy**, then copy your URL (e.g. `https://shortix.vercel.app`).
+> **Note:** In production the backend sets `SameSite=None` on the auth cookie so login works across the Vercel → Render domains.
 
-### Final wiring
+---
 
-Back on Render, set:
-- `PUBLIC_BASE_URL = <Render URL>` — the base of your short links
-- `FRONTEND_URL = <Vercel URL>` — so CORS allows the frontend
+## 🛡️ Security
 
-Then **Manual Deploy** once more.
+- **httpOnly JWT cookies** — tokens are never exposed to client-side JavaScript.
+- **bcrypt password hashing** — passwords are salted and hashed before storage.
+- **Security headers** — `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy` on every response.
+- **SSRF protection** — blocks redirects to internal hosts (`localhost`, `127.0.0.1`, `::1`, `.local`).
+- **Rate limiting** — auth and shorten endpoints are rate-limited to prevent abuse.
+- Run `npm audit fix` after installation to address known dependency vulnerabilities.
 
-> **Note:** in production the backend sets `SameSite=None` on the auth cookie so login works across the Vercel → Render domains.
-
-## 📦 API Endpoints
-
-### Authentication
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/auth/register` | Register a new user |
-| `POST` | `/api/auth/login`    | Log in and receive JWT cookie |
-| `POST` | `/api/auth/logout`   | Clear auth cookie |
-| `GET`  | `/api/auth/me`       | Restore session |
-
-### URL Operations
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST`   | `/api/url/shorten` | Shorten a URL (optional custom slug) |
-| `GET`    | `/api/url/my-urls` | List user's short URLs |
-| `PATCH`  | `/api/url/:id`     | Update destination URL |
-| `DELETE` | `/api/url/:id`     | Delete a short link |
-
-### System & Redirects
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/health` | Health check for uptime monitors |
-| `GET` | `/:shortCode` | Redirect to original URL (Redis cached) |
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Fork the repository, create a feature branch, and open a pull request. Please ensure code follows existing style and run `npm test` (if tests exist) before submitting.
+Contributions are welcome! Fork the repository, create a feature branch, and open a pull request.
 
-## 📄 License
+---
 
-This project is licensed under the MIT License – see the `LICENSE` file for details.
+*Feel free to explore, star the repo ⭐, and contribute!*
