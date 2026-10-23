@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/auth'
+import { useToast } from '../context/ToastContext'
 import QRCodeModal from './QRCodeModal'
 import EditUrlModal from './EditUrlModal'
 
@@ -16,6 +17,7 @@ function isValidHttpUrl(value) {
 
 export default function ShortenPage() {
   const { user, logout } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
 
   const [url, setUrl] = useState('')
@@ -86,8 +88,8 @@ export default function ShortenPage() {
       setResult(data.data)
       setUrl('')
       setCustomSlug('')
-      // Prepend newly created link to list immediately
       setUrls((prev) => [data.data, ...prev])
+      showToast('Short link created successfully! 🚀', 'success')
     } catch (err) {
       if (err.status === 401) {
         await logout()
@@ -95,6 +97,7 @@ export default function ShortenPage() {
         return
       }
       setError(err.message || 'Something went wrong. Please try again.')
+      showToast(err.message || 'Failed to shorten URL.', 'error')
     } finally {
       setSubmitting(false)
     }
@@ -110,8 +113,10 @@ export default function ShortenPage() {
         setCopiedMain(true)
         setTimeout(() => setCopiedMain(false), 2000)
       }
+      showToast('Link copied to clipboard! 📋', 'success')
     } catch {
       setError('Could not copy automatically. Select and copy the link manually.')
+      showToast('Could not copy automatically.', 'error')
     }
   }
 
@@ -123,8 +128,9 @@ export default function ShortenPage() {
       await api.delete(`/url/${id}`)
       setUrls((prev) => prev.filter((item) => item.id !== id))
       if (result?.id === id) setResult(null)
+      showToast('Short link deleted! 🗑️', 'info')
     } catch (err) {
-      alert(err.message || 'Failed to delete URL.')
+      showToast(err.message || 'Failed to delete URL.', 'error')
     } finally {
       setDeletingId(null)
     }
@@ -139,6 +145,7 @@ export default function ShortenPage() {
       if (result?.id === id) {
         setResult((prev) => ({ ...prev, originalUrl: newOriginalUrl }))
       }
+      showToast('Destination URL updated! ✨', 'success')
     }
   }
 
