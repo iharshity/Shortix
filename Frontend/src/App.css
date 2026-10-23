@@ -257,6 +257,30 @@
   transform: none;
 }
 
+.btn-danger {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.45), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text-h);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--glass-border-strong);
+}
+
 /* ---- Shorten page ---- */
 
 .shorten-main {
@@ -797,6 +821,40 @@
   width: auto;
   padding: 10px 20px;
   font-size: 13.5px;
+}
+
+/* ---- Delete Confirmation Modal ---- */
+
+.delete-modal-card {
+  max-width: 400px;
+  text-align: center;
+}
+
+.delete-icon-wrap {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: var(--error);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 0 28px rgba(248, 113, 113, 0.16);
+}
+
+.delete-url-box {
+  margin: 16px 0 24px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.delete-modal-actions .btn {
+  flex: 1;
 }
 
 @keyframes modalFade {

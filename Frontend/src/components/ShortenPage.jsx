@@ -5,6 +5,7 @@ import { useAuth } from '../context/auth'
 import { useToast } from '../context/ToastContext'
 import QRCodeModal from './QRCodeModal'
 import EditUrlModal from './EditUrlModal'
+import ConfirmDeleteModal from './ConfirmDeleteModal'
 
 function isValidHttpUrl(value) {
   try {
@@ -38,6 +39,7 @@ export default function ShortenPage() {
   // Modals state
   const [qrModal, setQrModal] = useState({ open: false, url: '', shortCode: '' })
   const [editItem, setEditItem] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   async function fetchUrls() {
     setLoadingUrls(true)
@@ -120,15 +122,16 @@ export default function ShortenPage() {
     }
   }
 
-  async function handleDelete(id) {
-    if (!window.confirm('Are you sure you want to delete this short link?')) return
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return
 
-    setDeletingId(id)
+    setDeletingId(deleteTarget.id)
     try {
-      await api.delete(`/url/${id}`)
-      setUrls((prev) => prev.filter((item) => item.id !== id))
-      if (result?.id === id) setResult(null)
+      await api.delete(`/url/${deleteTarget.id}`)
+      setUrls((prev) => prev.filter((item) => item.id !== deleteTarget.id))
+      if (result?.id === deleteTarget.id) setResult(null)
       showToast('Short link deleted! 🗑️', 'info')
+      setDeleteTarget(null)
     } catch (err) {
       showToast(err.message || 'Failed to delete URL.', 'error')
     } finally {
@@ -407,11 +410,10 @@ export default function ShortenPage() {
                     <button
                       type="button"
                       className="btn-action btn-action-danger"
-                      onClick={() => handleDelete(item.id)}
-                      disabled={deletingId === item.id}
+                      onClick={() => setDeleteTarget(item)}
                       title="Delete link"
                     >
-                      {deletingId === item.id ? '…' : 'Delete'}
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -436,6 +438,16 @@ export default function ShortenPage() {
           item={editItem}
           onClose={() => setEditItem(null)}
           onSave={handleSaveEdit}
+        />
+      )}
+
+      {/* Custom Confirm Delete Modal */}
+      {deleteTarget && (
+        <ConfirmDeleteModal
+          item={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleConfirmDelete}
+          deleting={deletingId === deleteTarget.id}
         />
       )}
     </div>
